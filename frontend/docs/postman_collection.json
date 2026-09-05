@@ -1,0 +1,186 @@
+{
+  "info": {
+    "name": "Mini Cloud POS System",
+    "description": "MERN POS system with AI-powered insights. There is no default account — create your first admin with `node scripts/createAdmin.js --name ... --email ... --password ...` (see README), then log in below. The JWT is set as an HttpOnly cookie and Postman will carry it automatically on subsequent requests (cookie jar enabled by default).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "userId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "saleId", "value": "" },
+    { "key": "invoiceNumber", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"your-admin@example.com\",\n  \"password\": \"your-password\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        { "name": "Get current session", "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" } },
+        { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" } }
+      ]
+    },
+    {
+      "name": "Users (admin only)",
+      "item": [
+        { "name": "List users", "request": { "method": "GET", "url": "{{baseUrl}}/users" } },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Front Desk Cashier\",\n  \"email\": \"cashier@example.com\",\n  \"password\": \"ChangeMe123\",\n  \"role\": \"cashier\"\n}"
+            },
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Update user (role / active status)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"admin\",\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/users/{{userId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        { "name": "List / search products", "request": { "method": "GET", "url": "{{baseUrl}}/products?search=&category=&limit=50" } },
+        { "name": "List categories", "request": { "method": "GET", "url": "{{baseUrl}}/products/categories" } },
+        { "name": "Get product by id", "request": { "method": "GET", "url": "{{baseUrl}}/products/{{productId}}" } },
+        {
+          "name": "Create product (admin, multipart)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Sample Product", "type": "text" },
+                { "key": "sku", "value": "SAMPLE-001", "type": "text" },
+                { "key": "category", "value": "Beverages", "type": "text" },
+                { "key": "sellingPrice", "value": "99", "type": "text" },
+                { "key": "purchasePrice", "value": "60", "type": "text" },
+                { "key": "taxPercent", "value": "12", "type": "text" },
+                { "key": "defaultDiscount", "value": "0", "type": "text" },
+                { "key": "stockQty", "value": "50", "type": "text" },
+                { "key": "minStockLevel", "value": "10", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            },
+            "url": "{{baseUrl}}/products"
+          }
+        },
+        {
+          "name": "Update product (admin, multipart)",
+          "request": {
+            "method": "PUT",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "sellingPrice", "value": "109", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/products/{{productId}}"
+          }
+        },
+        { "name": "Deactivate product (admin)", "request": { "method": "DELETE", "url": "{{baseUrl}}/products/{{productId}}" } }
+      ]
+    },
+    {
+      "name": "Sales (POS Billing)",
+      "item": [
+        {
+          "name": "Create sale",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"productId\": \"{{productId}}\", \"qty\": 1, \"discountPercent\": 0 }\n  ],\n  \"paymentMethod\": \"cash\"\n}"
+            },
+            "url": "{{baseUrl}}/sales"
+          }
+        },
+        { "name": "List / filter sales", "request": { "method": "GET", "url": "{{baseUrl}}/sales?from=&to=&paymentMethod=&search=" } },
+        { "name": "Get sale by id", "request": { "method": "GET", "url": "{{baseUrl}}/sales/{{saleId}}" } },
+        { "name": "Get sale by invoice number", "request": { "method": "GET", "url": "{{baseUrl}}/sales/invoice/{{invoiceNumber}}" } }
+      ]
+    },
+    {
+      "name": "Returns",
+      "item": [
+        { "name": "Look up invoice for return", "request": { "method": "GET", "url": "{{baseUrl}}/returns/lookup/{{invoiceNumber}}" } },
+        {
+          "name": "Create return",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"saleId\": \"{{saleId}}\",\n  \"items\": [ { \"productId\": \"{{productId}}\", \"qty\": 1 } ],\n  \"reason\": \"customer changed mind\"\n}"
+            },
+            "url": "{{baseUrl}}/returns"
+          }
+        },
+        { "name": "List returns", "request": { "method": "GET", "url": "{{baseUrl}}/returns" } }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        { "name": "Low-stock / out-of-stock", "request": { "method": "GET", "url": "{{baseUrl}}/inventory/low-stock" } },
+        { "name": "Stock history for a product", "request": { "method": "GET", "url": "{{baseUrl}}/inventory/history/{{productId}}" } },
+        {
+          "name": "Manual stock adjustment (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"changeQty\": 10,\n  \"note\": \"restock\"\n}" },
+            "url": "{{baseUrl}}/inventory/adjust"
+          }
+        },
+        {
+          "name": "Apply old-stock clearance discounts (admin)",
+          "request": { "method": "POST", "url": "{{baseUrl}}/inventory/apply-old-stock-discounts" }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [{ "name": "Summary (admin)", "request": { "method": "GET", "url": "{{baseUrl}}/dashboard/summary" } }]
+    },
+    {
+      "name": "AI (admin only)",
+      "item": [
+        { "name": "Sales Insights", "request": { "method": "GET", "url": "{{baseUrl}}/ai/insights?days=30" } },
+        { "name": "Inventory Recommendations", "request": { "method": "GET", "url": "{{baseUrl}}/ai/inventory-recommendations" } },
+        { "name": "Sales Forecast", "request": { "method": "GET", "url": "{{baseUrl}}/ai/forecast" } },
+        {
+          "name": "Business Q&A (Ask AI)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"question\": \"Which product sold the most this month?\"\n}" },
+            "url": "{{baseUrl}}/ai/ask"
+          }
+        }
+      ]
+    }
+  ]
+}
