@@ -8,6 +8,9 @@ node_modules/
 # Uploaded product images
 uploads/
 
+# Production build output
+dist/
+
 # Logs
 *.log
 npm-debug.log*

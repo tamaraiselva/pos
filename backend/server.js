@@ -38,6 +38,10 @@ if (process.env.NODE_ENV !== "test") {
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "dist")));
+}
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
