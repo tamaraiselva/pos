@@ -133,10 +133,10 @@ All 4 AI features are implemented (the brief requires a minimum of 2).
 
 ## Documentation
 
-- [`docs/SCHEMA.md`](docs/SCHEMA.md) — MongoDB models, fields, indexes
-- [`docs/AI_ARCHITECTURE.md`](docs/AI_ARCHITECTURE.md) — how each AI feature is grounded in real data
-- [`docs/CONCURRENCY.md`](docs/CONCURRENCY.md) — how overselling is prevented under concurrent sales
-- [`docs/postman_collection.json`](docs/postman_collection.json) — importable Postman collection for every endpoint
+- [`frontend/docs/SCHEMA.md`](frontend/docs/SCHEMA.md) — MongoDB models, fields, indexes
+- [`frontend/docs/AI_ARCHITECTURE.md`](frontend/docs/AI_ARCHITECTURE.md) — how each AI feature is grounded in real data
+- [`frontend/docs/CONCURRENCY.md`](frontend/docs/CONCURRENCY.md) — how overselling is prevented under concurrent sales
+- [`frontend/docs/postman_collection.json`](frontend/docs/postman_collection.json) — importable Postman collection for every endpoint
 
 ## Security Notes
 
