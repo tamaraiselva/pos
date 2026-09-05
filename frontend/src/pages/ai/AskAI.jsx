@@ -38,7 +38,7 @@ function MessageBubble({ msg }) {
         </div>
       )}
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+        className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm ${
           isUser ? "rounded-tr-sm" : "rounded-tl-sm"
         }`}
         style={
@@ -133,12 +133,12 @@ export default function AskAI() {
   }
 
   return (
-    <div className="animate-fade-in flex h-[calc(100vh-5rem)] flex-col">
+    <div className="animate-fade-in flex flex-col h-[calc(100vh-7rem)] sm:h-[calc(100vh-5rem)]">
       {/* Header */}
-      <div className="mb-4 shrink-0">
-        <h1 className="text-2xl font-bold text-slate-900">Ask AI</h1>
-        <p className="mt-0.5 text-sm text-slate-500">
-          Ask business questions in plain English — answers grounded in your real POS data
+      <div className="mb-3 sm:mb-4 shrink-0">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Ask AI</h1>
+        <p className="mt-0.5 text-xs sm:text-sm text-slate-500">
+          Ask business questions in plain English - answers grounded in your real POS data
         </p>
       </div>
 
