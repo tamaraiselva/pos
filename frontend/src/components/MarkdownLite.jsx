@@ -22,23 +22,25 @@ export default function MarkdownLite({ text, className }) {
     <div className={className}>
       {lines.map((line, i) => {
         const trimmed = line.trim();
-        if (trimmed === "") return <div key={i} className="h-2" />;
-        if (/^[-*]\s+/.test(trimmed)) {
+        if (trimmed === "") return <div key={i} className="h-1.5" />;
+        if (/^[-*•]\s*/.test(trimmed)) {
+          const content = trimmed.replace(/^[-*•]\s*/, "");
+          if (!content) return null;
           return (
-            <div key={i} className="flex gap-2 pl-1">
-              <span>&bull;</span>
-              <span>{renderInline(trimmed.replace(/^[-*]\s+/, ""), i)}</span>
+            <div key={i} className="flex items-start gap-1.5 pl-1 py-0.5">
+              <span className="text-indigo-500 font-bold shrink-0 leading-tight">•</span>
+              <span className="flex-1 leading-normal">{renderInline(content, i)}</span>
             </div>
           );
         }
         if (/^\d+\.\s+/.test(trimmed)) {
           return (
-            <div key={i} className="pl-1">
+            <div key={i} className="pl-1 py-0.5 leading-normal">
               {renderInline(trimmed, i)}
             </div>
           );
         }
-        return <p key={i}>{renderInline(line, i)}</p>;
+        return <p key={i} className="leading-normal">{renderInline(line, i)}</p>;
       })}
     </div>
   );

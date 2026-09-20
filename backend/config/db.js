@@ -5,6 +5,8 @@ async function connectDB() {
 
   const conn = await mongoose.connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 8000,
+    connectTimeoutMS: 10000,
+    family: 4, // Force IPv4 to avoid Windows DNS IPv6 SRV lookup hangs on MongoDB Atlas
   });
 
   console.log(`MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);

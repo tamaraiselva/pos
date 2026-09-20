@@ -156,10 +156,13 @@ async function answerQuestion(question) {
         "You have access to tools that query real-time sales, inventory, and product data from the store's database. " +
         "\n\nBehavior rules:" +
         "\n- For greetings or small talk (e.g. 'hi', 'how are you'), respond warmly and briefly, then offer to help with sales or inventory." +
-        "\n- For any question about sales, products, revenue, stock, or inventory — always call the relevant tool(s) proactively. Do NOT ask for clarification on broad questions like 'show me inventory' or 'what are sales like'; just fetch the data and present it." +
+        "\n- For 'out of stock', 'stock out', or 'zero stock' requests — ALWAYS call `getOutOfStockProducts`. Do NOT list items with stock > 0 when asked specifically for out-of-stock products." +
+        "\n- For questions about specific product prices, SKU codes (e.g. 'SKU: CHOCOL-008 price' or 'price of CHOCOL-008'), stock levels, or product details — ALWAYS call the `searchProducts` tool." +
+        "\n- For any question about sales, products, revenue, stock, or inventory — always call the relevant tool(s) proactively." +
+        "\n- Format list items cleanly on a single line per product (e.g. `• **Product Name** (SKU: XYZ) - Category: Snack | Stock: 0`). Do NOT break individual product properties onto separate bullet lines." +
         "\n- Never fabricate numbers or data. All figures must come from tool results." +
         "\n- If a tool returns no data, say so clearly and suggest what the user could try instead." +
-        "\n- Be concise and friendly. Format lists with bullet points where helpful.",
+        "\n- Be concise and friendly.",
     },
     { role: "user", content: question },
   ];

@@ -62,14 +62,33 @@ async function getLowStockProducts({ limit = 20 } = {}) {
     isActive: true,
     $expr: { $lte: ["$stockQty", "$minStockLevel"] },
   })
-    .select("name sku stockQty minStockLevel category")
+    .select("name sku stockQty minStockLevel category sellingPrice")
     .limit(limit);
   return rows.map((p) => ({
     name: p.name,
     sku: p.sku,
     category: p.category,
+    sellingPriceFormatted: `₹${round2(p.sellingPrice || 0).toFixed(2)}`,
     stockQty: p.stockQty,
     minStockLevel: p.minStockLevel,
+    stockStatus: p.stockQty <= 0 ? "Out of Stock ❌" : "Low Stock ⚠️",
+  }));
+}
+
+async function getOutOfStockProducts({ limit = 20 } = {}) {
+  const rows = await Product.find({
+    isActive: true,
+    stockQty: 0,
+  })
+    .select("name sku stockQty minStockLevel category sellingPrice")
+    .limit(limit);
+  return rows.map((p) => ({
+    name: p.name,
+    sku: p.sku,
+    category: p.category,
+    sellingPriceFormatted: `₹${round2(p.sellingPrice || 0).toFixed(2)}`,
+    stockQty: 0,
+    status: "Out of Stock ❌",
   }));
 }
 
@@ -112,6 +131,43 @@ async function getRevenueByCategory({ days = 30 } = {}) {
   return rows.map((r) => ({ category: r._id, revenue: round2(r.revenue) }));
 }
 
+async function searchProducts({ query = "", limit = 10 } = {}) {
+  const filter = { isActive: true };
+  if (query && query.trim()) {
+    const q = query.trim();
+    filter.$or = [
+      { sku: { $regex: q, $options: "i" } },
+      { name: { $regex: q, $options: "i" } },
+      { category: { $regex: q, $options: "i" } },
+      { barcode: { $regex: q, $options: "i" } },
+    ];
+  }
+  const products = await Product.find(filter)
+    .select("name sku barcode sellingPrice purchasePrice stockQty minStockLevel category taxPercent defaultDiscount imageUrl")
+    .limit(limit);
+
+  return products.map((p) => {
+    const sellingPrice = round2(p.sellingPrice || 0);
+    const purchasePrice = round2(p.purchasePrice || 0);
+    const stockStatus = p.stockQty <= 0 ? "Out of Stock ❌" : p.stockQty <= p.minStockLevel ? "Low Stock ⚠️" : "In Stock ✅";
+    return {
+      name: p.name,
+      sku: p.sku,
+      barcode: p.barcode || "",
+      sellingPriceFormatted: `₹${sellingPrice.toFixed(2)}`,
+      sellingPrice: sellingPrice,
+      purchasePrice: purchasePrice,
+      stockQty: p.stockQty,
+      minStockLevel: p.minStockLevel,
+      stockStatus: stockStatus,
+      category: p.category,
+      taxPercent: p.taxPercent || 0,
+      defaultDiscount: p.defaultDiscount || 0,
+      imageUrl: p.imageUrl || null,
+    };
+  });
+}
+
 const TOOL_DEFINITIONS = [
   {
     type: "function",
@@ -145,7 +201,18 @@ const TOOL_DEFINITIONS = [
     type: "function",
     function: {
       name: "getLowStockProducts",
-      description: "Get active products whose stock is at or below their minimum stock level, including out-of-stock.",
+      description: "Get active products whose stock is low (at or below minStockLevel).",
+      parameters: {
+        type: "object",
+        properties: { limit: { type: "number", description: "Max products to return (default 20)" } },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "getOutOfStockProducts",
+      description: "Get active products that are completely out of stock (stockQty = 0). Use this SPECIFICALLY when asked for 'out of stock', 'stock out', or 'zero stock' products.",
       parameters: {
         type: "object",
         properties: { limit: { type: "number", description: "Max products to return (default 20)" } },
@@ -170,7 +237,21 @@ const TOOL_DEFINITIONS = [
       description: "Get total revenue broken down by product category over a recent time window.",
       parameters: {
         type: "object",
-        properties: { days: { type: "number", description: "Lookback window in days (default 30)" } },
+        properties: { days: { type: "number", description: "Lookback window in days (default 30)" }, },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "searchProducts",
+      description: "Search active products by SKU code, name, or category to get price, stock, category, or product details.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Search query: SKU code (e.g. CHOCOL-008), product name, or category." },
+          limit: { type: "number", description: "Max products to return (default 10)" },
+        },
       },
     },
   },
@@ -180,8 +261,10 @@ const TOOL_IMPLEMENTATIONS = {
   getBestSellers,
   getSlowMovers,
   getLowStockProducts,
+  getOutOfStockProducts,
   getSalesTotal,
   getRevenueByCategory,
+  searchProducts,
 };
 
 module.exports = {
@@ -190,6 +273,8 @@ module.exports = {
   getBestSellers,
   getSlowMovers,
   getLowStockProducts,
+  getOutOfStockProducts,
   getSalesTotal,
   getRevenueByCategory,
+  searchProducts,
 };

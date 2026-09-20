@@ -28,6 +28,7 @@ const getAISettings = asyncHandler(async (req, res) => {
         apiKey: "",
         model: "gpt-4o-mini",
         baseURL: PROVIDER_BASE_URLS.openai,
+        widgetType: "full",
         isConfigured: Boolean(process.env.OPENAI_API_KEY),
         source: Boolean(process.env.OPENAI_API_KEY) ? "env" : "none",
       },
@@ -41,6 +42,7 @@ const getAISettings = asyncHandler(async (req, res) => {
       apiKey: maskApiKey(dbConfig.apiKey),
       model: dbConfig.model || "gpt-4o-mini",
       baseURL: dbConfig.baseURL || PROVIDER_BASE_URLS[dbConfig.provider || "openai"] || PROVIDER_BASE_URLS.openai,
+      widgetType: dbConfig.widgetType || "full",
       isConfigured: Boolean(dbConfig.apiKey),
       source: "database",
     },
@@ -48,7 +50,7 @@ const getAISettings = asyncHandler(async (req, res) => {
 });
 
 const updateAISettings = asyncHandler(async (req, res) => {
-  let { provider = "openai", apiKey, model = "gpt-4o-mini", baseURL } = req.body;
+  let { provider = "openai", apiKey, model = "gpt-4o-mini", baseURL, widgetType = "full" } = req.body;
 
   const existingConfig = await Setting.get("ai_config", null);
 
@@ -67,6 +69,9 @@ const updateAISettings = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Model name is required");
   }
 
+  const validWidgetTypes = ["full", "floating", "compact"];
+  const effectiveWidgetType = validWidgetTypes.includes(widgetType) ? widgetType : (existingConfig?.widgetType || "full");
+
   const effectiveBaseURL = baseURL || PROVIDER_BASE_URLS[provider] || PROVIDER_BASE_URLS.openai;
 
   const newConfig = {
@@ -74,6 +79,7 @@ const updateAISettings = asyncHandler(async (req, res) => {
     apiKey: apiKey.trim(),
     model: model.trim(),
     baseURL: effectiveBaseURL.trim(),
+    widgetType: effectiveWidgetType,
   };
 
   await Setting.set("ai_config", newConfig, req.user.id);
@@ -86,6 +92,7 @@ const updateAISettings = asyncHandler(async (req, res) => {
       apiKey: maskApiKey(newConfig.apiKey),
       model: newConfig.model,
       baseURL: newConfig.baseURL,
+      widgetType: newConfig.widgetType,
       isConfigured: true,
       source: "database",
     },

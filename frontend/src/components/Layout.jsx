@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
+import GlobalAIChatbot from "./GlobalAIChatbot";
 
 /* ── SVG icon components (no external dep) ──────────────────── */
 const Icon = {
@@ -72,7 +73,6 @@ const ADMIN_LINKS = [
   { to: "/returns", label: "Returns", Icon: Icon.Returns },
   { to: "/inventory", label: "Inventory", Icon: Icon.Inventory },
   { to: "/ai/insights", label: "AI Insights", Icon: Icon.AI },
-  { to: "/ai/ask", label: "Ask AI", Icon: Icon.Chat },
   { to: "/users", label: "Users", Icon: Icon.Users },
   { to: "/settings", label: "Settings", Icon: Icon.Settings },
 ];
@@ -286,6 +286,9 @@ export default function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Global AI Chatbot Floating Widget for Admin */}
+      <GlobalAIChatbot />
     </div>
   );
 }
